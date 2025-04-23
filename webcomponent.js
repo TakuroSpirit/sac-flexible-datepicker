@@ -26,14 +26,38 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
+      <div style="margin-bottom: 6px;">
+        <label style="font-weight:bold; font-size: 0.85em;">Modus wählen:</label>
+        <select id="modeSelect" style="padding:4px; width: 100%;">
+          <option value="day">Tag</option>
+          <option value="month">Monat</option>
+          <option value="year">Jahr</option>
+        </select>
+      </div>
       <input id="picker" style="padding:6px;width:100%;" />
     `;
+
+    this.shadowRoot.getElementById("modeSelect").value = this._selectMode;
+    this.shadowRoot.getElementById("modeSelect").addEventListener("change", (e) => {
+      this.selectMode = e.target.value;
+    });
+
     this.loadAndInitFlatpickr();
   }
 
   async loadAndInitFlatpickr() {
     if (!window.flatpickr) {
       await import('https://cdn.jsdelivr.net/npm/flatpickr');
+    }
+    if (this._selectMode === "month") {
+      await import('https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js');
+      if (!document.getElementById("flatpickr-month-css")) {
+        const styleLink = document.createElement("link");
+        styleLink.id = "flatpickr-month-css";
+        styleLink.rel = "stylesheet";
+        styleLink.href = "https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css";
+        document.head.appendChild(styleLink);
+      }
     }
     this.initFlatpickr();
   }
@@ -42,9 +66,10 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     const input = this.shadowRoot.getElementById("picker");
     if (!input) return;
 
+    if (this.fp) this.fp.destroy();
+
     const config = {
       dateFormat: "Y-m-d",
-      mode: this._selectMode === "day" ? "single" : "range",
       onChange: (selectedDates) => {
         if (this._selectMode === "year") {
           const year = selectedDates[0].getFullYear();
@@ -62,6 +87,28 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       }
     };
 
+    if (this._selectMode === "month") {
+      config.dateFormat = "Y-m";
+      config.altFormat = "F Y";
+      config.plugins = [
+        new flatpickr.plugins.monthSelectPlugin({
+          shorthand: true,
+          dateFormat: "Y-m",
+          altFormat: "F Y"
+        })
+      ];
+    } else if (this._selectMode === "year") {
+      config.dateFormat = "Y";
+      config.onReady = (selectedDates, dateStr, instance) => {
+        instance.currentYearElement.type = "number";
+        instance.currentYearElement.step = 1;
+        instance.daysContainer.style.display = "none";
+        instance.monthElements.forEach(el => el.style.display = "none");
+      };
+    } else if (this._selectMode === "day") {
+      config.mode = "single";
+    }
+
     this.fp = flatpickr(input, config);
   }
 
@@ -77,8 +124,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   set selectMode(value) {
     this._selectMode = value;
-    if (this.fp) this.fp.destroy();
-    this.initFlatpickr();
+    this.render();
   }
 
   set darktheme(value) {
