@@ -10,12 +10,12 @@
     {
       "kind": "main",
       "tag": "custom-flatpickr-datepicker",
-      "url": "https:// takurospirit.github.io/sac-flexible-datepicker/webcomponent.js"
+      "url": "https://takurospirit.github.io/sac-flexible-datepicker/webcomponent.js"
     },
     {
       "kind": "styling",
       "tag": "custom-flatpickr-datepicker-aps",
-      "url": "https:// takurospirit.github.io/sac-flexible-datepicker/aps_webcomponent.js"
+      "url": "https://takurospirit.github.io/sac-flexible-datepicker/aps_webcomponent.js"
     }
   ],
   "properties": {
