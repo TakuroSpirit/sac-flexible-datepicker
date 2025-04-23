@@ -77,22 +77,22 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     const config = {
       dateFormat: "Y-m-d",
       defaultDate: isValidDate(this._dateVal) ? this._dateVal : null,
-      onChange: (selectedDates) => {
+      onValueUpdate: (selectedDates, dateStr, instance) => {
         const d = selectedDates[0];
         if (!isValidDate(d)) return;
 
-        if (this._selectMode === "year") {
-          const year = d.getFullYear();
-          this._dateVal = new Date(year, 0, 1);
-          this._secondDateVal = new Date(year, 11, 31);
-          this.fp.close();
-          this.fireChanged();
-        } else if (this._selectMode === "month") {
+        if (this._selectMode === "month") {
           this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
           this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
           this.fp.close();
           this.fireChanged();
-        } else {
+        }
+      },
+      onChange: (selectedDates) => {
+        const d = selectedDates[0];
+        if (!isValidDate(d)) return;
+
+        if (this._selectMode === "day") {
           this._dateVal = d;
           this._secondDateVal = selectedDates[1] || null;
           this.fireChanged();
