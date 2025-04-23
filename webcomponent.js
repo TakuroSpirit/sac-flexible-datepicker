@@ -77,17 +77,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     const config = {
       dateFormat: "Y-m-d",
       defaultDate: isValidDate(this._dateVal) ? this._dateVal : null,
-      onValueUpdate: (selectedDates, dateStr, instance) => {
-        const d = selectedDates[0];
-        if (!isValidDate(d)) return;
-
-        if (this._selectMode === "month") {
-          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
-          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-          this.fp.close();
-          this.fireChanged();
-        }
-      },
       onChange: (selectedDates) => {
         const d = selectedDates[0];
         if (!isValidDate(d)) return;
@@ -96,6 +85,40 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           this._dateVal = d;
           this._secondDateVal = selectedDates[1] || null;
           this.fireChanged();
+        }
+      },
+      onOpen: (selectedDates, dateStr, instance) => {
+        if (this._selectMode === "year") {
+          setTimeout(() => {
+            const yearElements = instance.calendarContainer.querySelectorAll(".numInput.cur-year");
+            yearElements.forEach(el => {
+              el.style.cursor = "pointer";
+              el.addEventListener("click", () => {
+                const year = parseInt(el.value);
+                if (!isNaN(year)) {
+                  this._dateVal = new Date(year, 0, 1);
+                  this._secondDateVal = new Date(year, 11, 31);
+                  this.fp.close();
+                  this.fireChanged();
+                }
+              });
+            });
+          }, 100);
+        } else if (this._selectMode === "month") {
+          setTimeout(() => {
+            const monthButtons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
+            monthButtons.forEach((btn, index) => {
+              btn.style.cursor = "pointer";
+              btn.addEventListener("click", () => {
+                const year = instance.currentYear;
+                const month = index;
+                this._dateVal = new Date(year, month, 1);
+                this._secondDateVal = new Date(year, month + 1, 0);
+                this.fp.close();
+                this.fireChanged();
+              });
+            });
+          }, 100);
         }
       }
     };
@@ -117,27 +140,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       config.altInput = true;
       config.altFormat = "Y";
       config.allowInput = false;
-      config.onReady = (selectedDates, dateStr, instance) => {
-        try {
-          if (instance.currentYearElement) {
-            instance.currentYearElement.type = "button";
-            instance.currentYearElement.style.cursor = "pointer";
-            instance.currentYearElement.addEventListener("click", () => {
-              const year = parseInt(instance.currentYearElement.innerText);
-              if (!isNaN(year)) {
-                this._dateVal = new Date(year, 0, 1);
-                this._secondDateVal = new Date(year, 11, 31);
-                this.fp.close();
-                this.fireChanged();
-              }
-            });
-          }
-          if (instance.daysContainer) instance.daysContainer.style.display = "none";
-          if (instance.monthElements) instance.monthElements.forEach(el => el.style.display = "none");
-        } catch (e) {
-          console.warn("Year mode customization failed:", e);
-        }
-      };
     } else if (this._selectMode === "day") {
       config.mode = "single";
     }
@@ -166,8 +168,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   set dateVal(value) {
-    this._dateVal = new Date(value);
-    if (this.fp) this.fp.setDate(this._dateVal);
+    const parsed = new Date(value);
+    if (parsed instanceof Date && !isNaN(parsed)) {
+      this._dateVal = parsed;
+      if (this.fp) this.fp.setDate(this._dateVal);
+    }
   }
 
   set secondDateVal(value) {
