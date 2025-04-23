@@ -7,6 +7,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this._darktheme = false;
     this._dateVal = null;
     this._secondDateVal = null;
+    this.monthSelectPlugin = null;
   }
 
   connectedCallback() {
@@ -49,8 +50,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     if (!window.flatpickr) {
       await import('https://cdn.jsdelivr.net/npm/flatpickr');
     }
+
     if (this._selectMode === "month") {
-      await import('https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js');
+      const pluginModule = await import('https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js');
+      this.monthSelectPlugin = pluginModule.default;
+
       if (!document.getElementById("flatpickr-month-css")) {
         const styleLink = document.createElement("link");
         styleLink.id = "flatpickr-month-css";
@@ -59,6 +63,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         document.head.appendChild(styleLink);
       }
     }
+
     this.initFlatpickr();
   }
 
@@ -87,11 +92,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       }
     };
 
-    if (this._selectMode === "month") {
+    if (this._selectMode === "month" && this.monthSelectPlugin) {
       config.dateFormat = "Y-m";
       config.altFormat = "F Y";
       config.plugins = [
-        new flatpickr.plugins.monthSelectPlugin({
+        this.monthSelectPlugin({
           shorthand: true,
           dateFormat: "Y-m",
           altFormat: "F Y"
@@ -100,10 +105,12 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     } else if (this._selectMode === "year") {
       config.dateFormat = "Y";
       config.onReady = (selectedDates, dateStr, instance) => {
-        instance.currentYearElement.type = "number";
-        instance.currentYearElement.step = 1;
-        instance.daysContainer.style.display = "none";
-        instance.monthElements.forEach(el => el.style.display = "none");
+        if (instance.currentYearElement) {
+          instance.currentYearElement.type = "number";
+          instance.currentYearElement.step = 1;
+        }
+        if (instance.daysContainer) instance.daysContainer.style.display = "none";
+        if (instance.monthElements) instance.monthElements.forEach(el => el.style.display = "none");
       };
     } else if (this._selectMode === "day") {
       config.mode = "single";
