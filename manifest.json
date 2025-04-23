@@ -1,4 +1,3 @@
-<!-- manifest.json -->
 {
   "name": "CustomFlatpickrDatePicker",
   "id": "custom.flatpickr.datepicker",
@@ -6,16 +5,19 @@
   "vendor": "GeneratedByChatGPT",
   "description": "Date Picker mit Flatpickr und Auswahlmodus (Tag, Monat, Jahr)",
   "icon": "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css",
+  "newInstancePrefix": "CustomFlatpickrDatePicker",
   "webcomponents": [
     {
       "kind": "main",
       "tag": "custom-flatpickr-datepicker",
-      "url": "https://takurospirit.github.io/sac-flexible-datepicker/webcomponent.js"
+      "url": "https://takurospirit.github.io/sac-flexible-datepicker/webcomponent.js",
+      "integrity": "sha256-u3+Z4HFJ33spYCduUug+2dFyrrLBhcySsGFcu7KrjrU="
     },
     {
       "kind": "styling",
       "tag": "custom-flatpickr-datepicker-aps",
-      "url": "https://takurospirit.github.io/sac-flexible-datepicker/aps_webcomponent.js"
+      "url": "https://takurospirit.github.io/sac-flexible-datepicker/aps_webcomponent.js",
+      "integrity": "sha256-YnukilWL2BstQrassfGU68unCqEvF1Fo6lFsI9t9nyE="
     }
   ],
   "properties": {
@@ -37,6 +39,7 @@
       "description": "Ausgewähltes Enddatum (bei Ranges)"
     }
   },
+  "methods": {},
   "events": {
     "onChange": {
       "description": "Wird ausgelöst, wenn sich das Datum ändert"
