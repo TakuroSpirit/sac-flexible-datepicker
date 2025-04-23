@@ -1,3 +1,4 @@
+// webcomponent.js
 class CustomFlatpickrDatePicker extends HTMLElement {
   constructor() {
     super();
@@ -13,25 +14,18 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   render() {
-    const cssLink = document.createElement("link");
-    cssLink.rel = "stylesheet";
-    cssLink.href = this._darktheme
-      ? "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css"
-      : "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
+    this.shadowRoot.innerHTML = `
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+      <input id="picker" style="padding:6px;width:100%;" />
+    `;
+    this.loadAndInitFlatpickr();
+  }
 
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/flatpickr";
-    script.onload = () => this.initFlatpickr();
-
-    const input = document.createElement("input");
-    input.id = "picker";
-    input.style.padding = "6px";
-    input.style.width = "100%";
-
-    this.shadowRoot.innerHTML = "";
-    this.shadowRoot.appendChild(cssLink);
-    this.shadowRoot.appendChild(input);
-    this.shadowRoot.appendChild(script);
+  async loadAndInitFlatpickr() {
+    if (!window.flatpickr) {
+      await import('https://cdn.jsdelivr.net/npm/flatpickr');
+    }
+    this.initFlatpickr();
   }
 
   initFlatpickr() {
@@ -71,7 +65,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     }));
   }
 
-  // SAC property setters
   set selectMode(value) {
     this._selectMode = value;
     if (this.fp) this.fp.destroy();
