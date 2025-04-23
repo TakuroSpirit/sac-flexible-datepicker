@@ -32,7 +32,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         <label><input type="radio" name="mode" value="month" ${this._selectMode === "month" ? "checked" : ""}/> Monat</label>
         <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
       </div>
-      <input id="picker" style="padding:6px;width:100%;" />
+      <div id="custom-input"></div>
     `;
 
     this.shadowRoot.querySelectorAll("input[name='mode']").forEach(radio => {
@@ -41,60 +41,78 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       });
     });
 
-    this.initFlatpickr();
+    this.renderCustomInput();
   }
 
-  async initFlatpickr() {
-    if (!window.flatpickr) {
-      await import("https://cdn.jsdelivr.net/npm/flatpickr");
+  async renderCustomInput() {
+    const container = this.shadowRoot.getElementById("custom-input");
+    container.innerHTML = "";
+
+    if (this.fp) {
+      this.fp.destroy();
+      this.fp = null;
     }
-
-    const input = this.shadowRoot.getElementById("picker");
-    if (!input) return;
-
-    if (this.fp) this.fp.destroy();
-
-    const config = {
-      defaultDate: this._dateVal,
-      onChange: (selectedDates) => {
-        const d = selectedDates[0];
-        if (!(d instanceof Date) || isNaN(d)) return;
-
-        if (this._selectMode === "day") {
-          this._dateVal = d;
-          this._secondDateVal = null;
-        } else if (this._selectMode === "month") {
-          const year = d.getFullYear();
-          const month = d.getMonth();
-          this._dateVal = new Date(year, month, 1);
-          this._secondDateVal = new Date(year, month + 1, 0);
-        } else if (this._selectMode === "year") {
-          const year = d.getFullYear();
-          this._dateVal = new Date(year, 0, 1);
-          this._secondDateVal = new Date(year, 11, 31);
-        }
-
-        this.fireChanged();
-      }
-    };
 
     if (this._selectMode === "day") {
-      config.dateFormat = "d.m.Y";
+      const input = document.createElement("input");
+      input.style.padding = "6px";
+      input.style.width = "100%";
+      input.id = "picker";
+      container.appendChild(input);
+
+      if (!window.flatpickr) {
+        await import("https://cdn.jsdelivr.net/npm/flatpickr");
+      }
+
+      this.fp = flatpickr(input, {
+        dateFormat: "d.m.Y",
+        defaultDate: this._dateVal,
+        onChange: (selectedDates) => {
+          const d = selectedDates[0];
+          if (!(d instanceof Date) || isNaN(d)) return;
+          this._dateVal = d;
+          this._secondDateVal = null;
+          this.fireChanged();
+        }
+      });
+
+      if (this._dateVal) {
+        this.fp.setDate(this._dateVal, true);
+      }
+
     } else if (this._selectMode === "month") {
-      config.dateFormat = "m.Y";
-      config.altInput = true;
-      config.altFormat = "M Y";
+      const select = document.createElement("select");
+      select.style.width = "100%";
+      const currentYear = (new Date()).getFullYear();
+      for (let m = 0; m < 12; m++) {
+        const option = document.createElement("option");
+        const date = new Date(currentYear, m, 1);
+        option.value = `${currentYear}-${m + 1}`;
+        option.textContent = date.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        const [year, month] = select.value.split("-").map(Number);
+        this._dateVal = new Date(year, month - 1, 1);
+        this._secondDateVal = new Date(year, month, 0);
+        this.fireChanged();
+      });
+      container.appendChild(select);
     } else if (this._selectMode === "year") {
-      config.dateFormat = "Y";
-      config.altInput = true;
-      config.altFormat = "Y";
-      config.allowInput = false;
-    }
-
-    this.fp = flatpickr(input, config);
-
-    if (this._dateVal) {
-      this.fp.setDate(this._dateVal, true);
+      const input = document.createElement("input");
+      input.type = "number";
+      input.placeholder = "Jahr eingeben...";
+      input.style.width = "100%";
+      input.style.padding = "6px";
+      input.addEventListener("change", () => {
+        const year = parseInt(input.value);
+        if (!isNaN(year)) {
+          this._dateVal = new Date(year, 0, 1);
+          this._secondDateVal = new Date(year, 11, 31);
+          this.fireChanged();
+        }
+      });
+      container.appendChild(input);
     }
   }
 
