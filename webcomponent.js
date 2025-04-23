@@ -27,20 +27,19 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <div style="margin-bottom: 6px;">
-        <label style="font-weight:bold; font-size: 0.85em;">Modus wählen:</label>
-        <select id="modeSelect" style="padding:4px; width: 100%;">
-          <option value="day">Tag</option>
-          <option value="month">Monat</option>
-          <option value="year">Jahr</option>
-        </select>
+      <div style="margin-bottom: 8px; font-size: 0.9em;">
+        <label style="font-weight:bold; display:block; margin-bottom: 4px;">Modus wählen:</label>
+        <label><input type="radio" name="mode" value="day" ${this._selectMode === "day" ? "checked" : ""}/> Tag</label>
+        <label><input type="radio" name="mode" value="month" ${this._selectMode === "month" ? "checked" : ""}/> Monat</label>
+        <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
       </div>
       <input id="picker" style="padding:6px;width:100%;" />
     `;
 
-    this.shadowRoot.getElementById("modeSelect").value = this._selectMode;
-    this.shadowRoot.getElementById("modeSelect").addEventListener("change", (e) => {
-      this.selectMode = e.target.value;
+    this.shadowRoot.querySelectorAll("input[name='mode']").forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        this.selectMode = e.target.value;
+      });
     });
 
     this.loadAndInitFlatpickr();
@@ -75,42 +74,67 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
     const config = {
       dateFormat: "Y-m-d",
+      defaultDate: this._dateVal || null,
       onChange: (selectedDates) => {
         if (this._selectMode === "year") {
-          const year = selectedDates[0].getFullYear();
+          const year = selectedDates[0]?.getFullYear?.();
+          if (!year) return;
           this._dateVal = new Date(year, 0, 1);
           this._secondDateVal = new Date(year, 11, 31);
+          this.fp.close();
+          this.fireChanged();
         } else if (this._selectMode === "month") {
           const d = selectedDates[0];
+          if (!d) return;
           this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
           this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+          this.fp.close();
+          this.fireChanged();
         } else {
           this._dateVal = selectedDates[0];
           this._secondDateVal = selectedDates[1] || null;
+          this.fireChanged();
         }
-        this.fireChanged();
       }
     };
 
     if (this._selectMode === "month" && this.monthSelectPlugin) {
       config.dateFormat = "Y-m";
+      config.altInput = true;
       config.altFormat = "F Y";
       config.plugins = [
         this.monthSelectPlugin({
-          shorthand: true,
+          shorthand: false,
           dateFormat: "Y-m",
-          altFormat: "F Y"
+          altFormat: "F Y",
+          theme: "light"
         })
       ];
     } else if (this._selectMode === "year") {
       config.dateFormat = "Y";
+      config.altInput = true;
+      config.altFormat = "Y";
+      config.allowInput = false;
       config.onReady = (selectedDates, dateStr, instance) => {
-        if (instance.currentYearElement) {
-          instance.currentYearElement.type = "number";
-          instance.currentYearElement.step = 1;
+        try {
+          if (instance.currentYearElement) {
+            instance.currentYearElement.type = "button";
+            instance.currentYearElement.style.cursor = "pointer";
+            instance.currentYearElement.addEventListener("click", () => {
+              const year = parseInt(instance.currentYearElement.innerText);
+              if (!isNaN(year)) {
+                this._dateVal = new Date(year, 0, 1);
+                this._secondDateVal = new Date(year, 11, 31);
+                this.fp.close();
+                this.fireChanged();
+              }
+            });
+          }
+          if (instance.daysContainer) instance.daysContainer.style.display = "none";
+          if (instance.monthElements) instance.monthElements.forEach(el => el.style.display = "none");
+        } catch (e) {
+          console.warn("Year mode customization failed:", e);
         }
-        if (instance.daysContainer) instance.daysContainer.style.display = "none";
-        if (instance.monthElements) instance.monthElements.forEach(el => el.style.display = "none");
       };
     } else if (this._selectMode === "day") {
       config.mode = "single";
