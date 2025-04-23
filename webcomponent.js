@@ -75,7 +75,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     const isValidDate = (d) => d instanceof Date && !isNaN(d);
 
     const config = {
-      dateFormat: "Y-m-d",
       defaultDate: isValidDate(this._dateVal) ? this._dateVal : null,
       onChange: (selectedDates) => {
         const d = selectedDates[0];
@@ -92,9 +91,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         if (!isValidDate(d)) return;
 
         if (this._selectMode === "month") {
-          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
-          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-          this.fp._input.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const month = d.getMonth();
+          const year = d.getFullYear();
+          this._dateVal = new Date(year, month, 1);
+          this._secondDateVal = new Date(year, month + 1, 0);
+          this.fp._input.value = d.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
           this.fp.close();
           this.fireChanged();
         }
@@ -138,12 +139,12 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     if (this._selectMode === "month" && this.monthSelectPlugin) {
       config.dateFormat = "Y-m";
       config.altInput = true;
-      config.altFormat = "F Y";
+      config.altFormat = "M Y";
       config.plugins = [
         this.monthSelectPlugin({
-          shorthand: false,
+          shorthand: true,
           dateFormat: "Y-m",
-          altFormat: "F Y",
+          altFormat: "M Y",
           theme: "light"
         })
       ];
@@ -154,6 +155,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       config.allowInput = false;
     } else if (this._selectMode === "day") {
       config.mode = "single";
+      config.dateFormat = "d.m.Y";
     }
 
     this.fp = flatpickr(input, config);
@@ -197,6 +199,21 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   get secondDateVal() {
     return this._secondDateVal;
+  }
+
+  getStartDate() {
+    return this._dateVal;
+  }
+
+  getEndDate() {
+    return this._secondDateVal;
+  }
+
+  clear() {
+    this._dateVal = null;
+    this._secondDateVal = null;
+    if (this.fp) this.fp.clear();
+    this.fireChanged();
   }
 }
 
