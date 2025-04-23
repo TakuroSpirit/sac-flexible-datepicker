@@ -86,7 +86,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           this.fireChanged();
         }
       },
-      onValueUpdate: (selectedDates, dateStr, instance) => {
+      onValueUpdate: (selectedDates) => {
         const d = selectedDates[0];
         if (!isValidDate(d)) return;
 
@@ -132,21 +132,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
               });
             });
           }, 100);
-        } else if (this._selectMode === "month") {
-          setTimeout(() => {
-            const monthEls = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
-            monthEls.forEach((el, index) => {
-              el.style.cursor = "pointer";
-              el.addEventListener("click", () => {
-                const year = instance.currentYear;
-                this._dateVal = new Date(year, index, 1);
-                this._secondDateVal = new Date(year, index + 1, 0);
-                this.fp._input.value = this._dateVal.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
-                this.fp.close();
-                this.fireChanged();
-              });
-            });
-          }, 100);
         }
       }
     };
@@ -176,7 +161,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this.fp = flatpickr(input, config);
 
     if (this._dateVal) {
-      this.fp.setDate(this._dateVal);
+      this.fp.setDate(this._dateVal, true);
     }
   }
 
@@ -204,7 +189,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     const parsed = new Date(value);
     if (parsed instanceof Date && !isNaN(parsed)) {
       this._dateVal = parsed;
-      if (this.fp) this.fp.setDate(this._dateVal);
+      if (this.fp) this.fp.setDate(this._dateVal, true);
     }
   }
 
