@@ -7,7 +7,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this._darktheme = false;
     this._dateVal = null;
     this._secondDateVal = null;
-    this.monthSelectPlugin = null;
   }
 
   connectedCallback() {
@@ -42,121 +41,54 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       });
     });
 
-    this.loadAndInitFlatpickr();
-  }
-
-  async loadAndInitFlatpickr() {
-    if (!window.flatpickr) {
-      await import('https://cdn.jsdelivr.net/npm/flatpickr');
-    }
-
-    if (this._selectMode === "month") {
-      const pluginModule = await import('https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js');
-      this.monthSelectPlugin = pluginModule.default;
-
-      if (!document.getElementById("flatpickr-month-css")) {
-        const styleLink = document.createElement("link");
-        styleLink.id = "flatpickr-month-css";
-        styleLink.rel = "stylesheet";
-        styleLink.href = "https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css";
-        document.head.appendChild(styleLink);
-      }
-    }
-
     this.initFlatpickr();
   }
 
-  initFlatpickr() {
+  async initFlatpickr() {
+    if (!window.flatpickr) {
+      await import("https://cdn.jsdelivr.net/npm/flatpickr");
+    }
+
     const input = this.shadowRoot.getElementById("picker");
     if (!input) return;
 
     if (this.fp) this.fp.destroy();
 
-    const isValidDate = (d) => d instanceof Date && !isNaN(d);
-
     const config = {
-      defaultDate: isValidDate(this._dateVal) ? this._dateVal : null,
+      defaultDate: this._dateVal,
       onChange: (selectedDates) => {
         const d = selectedDates[0];
-        if (!isValidDate(d)) return;
+        if (!(d instanceof Date) || isNaN(d)) return;
 
         if (this._selectMode === "day") {
           this._dateVal = d;
-          this._secondDateVal = selectedDates[1] || null;
-          this.fireChanged();
-        }
-      },
-      onOpen: (selectedDates, dateStr, instance) => {
-        if (this._selectMode === "year") {
-          setTimeout(() => {
-            const yearElements = instance.calendarContainer.querySelectorAll(".numInput.cur-year");
-            yearElements.forEach(el => {
-              el.style.cursor = "pointer";
-              el.addEventListener("click", () => {
-                const year = parseInt(el.value);
-                if (!isNaN(year)) {
-                  const newDate = new Date(year, 0, 1);
-                  this._dateVal = newDate;
-                  this._secondDateVal = new Date(year, 11, 31);
-                  this.fp.setDate(this._dateVal, true);
-                  this.fp.close();
-                  this.fireChanged();
-                }
-              });
-              el.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                  const year = parseInt(el.value);
-                  if (!isNaN(year)) {
-                    const newDate = new Date(year, 0, 1);
-                    this._dateVal = newDate;
-                    this._secondDateVal = new Date(year, 11, 31);
-                    this.fp.setDate(this._dateVal, true);
-                    this.fp.close();
-                    this.fireChanged();
-                  }
-                }
-              });
-            });
-          }, 100);
+          this._secondDateVal = null;
         } else if (this._selectMode === "month") {
-          setTimeout(() => {
-            const monthButtons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
-            monthButtons.forEach((btn, index) => {
-              btn.style.cursor = "pointer";
-              btn.addEventListener("click", () => {
-                const year = instance.currentYear;
-                this._dateVal = new Date(year, index, 1);
-                this._secondDateVal = new Date(year, index + 1, 0);
-                this.fp.setDate(this._dateVal, true);
-                this.fp.close();
-                this.fireChanged();
-              });
-            });
-          }, 100);
+          const year = d.getFullYear();
+          const month = d.getMonth();
+          this._dateVal = new Date(year, month, 1);
+          this._secondDateVal = new Date(year, month + 1, 0);
+        } else if (this._selectMode === "year") {
+          const year = d.getFullYear();
+          this._dateVal = new Date(year, 0, 1);
+          this._secondDateVal = new Date(year, 11, 31);
         }
+
+        this.fireChanged();
       }
     };
 
-    if (this._selectMode === "month" && this.monthSelectPlugin) {
-      config.dateFormat = "Y-m";
+    if (this._selectMode === "day") {
+      config.dateFormat = "d.m.Y";
+    } else if (this._selectMode === "month") {
+      config.dateFormat = "m.Y";
       config.altInput = true;
       config.altFormat = "M Y";
-      config.plugins = [
-        this.monthSelectPlugin({
-          shorthand: false,
-          dateFormat: "Y-m",
-          altFormat: "M Y",
-          theme: "light"
-        })
-      ];
     } else if (this._selectMode === "year") {
       config.dateFormat = "Y";
       config.altInput = true;
       config.altFormat = "Y";
       config.allowInput = false;
-    } else if (this._selectMode === "day") {
-      config.mode = "single";
-      config.dateFormat = "d.m.Y";
     }
 
     this.fp = flatpickr(input, config);
