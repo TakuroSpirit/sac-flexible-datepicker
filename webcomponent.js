@@ -120,14 +120,15 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           }, 100);
         } else if (this._selectMode === "month") {
           setTimeout(() => {
-            const buttons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
-            buttons.forEach((btn, index) => {
+            const monthButtons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
+            monthButtons.forEach((btn, index) => {
               btn.style.cursor = "pointer";
               btn.addEventListener("click", () => {
                 const year = instance.currentYear;
                 this._dateVal = new Date(year, index, 1);
                 this._secondDateVal = new Date(year, index + 1, 0);
-                this.fp.setDate(this._dateVal, true);
+                const formatted = this._dateVal.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
+                this.fp._input.value = formatted;
                 this.fp.close();
                 this.fireChanged();
               });
@@ -143,7 +144,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       config.altFormat = "M Y";
       config.plugins = [
         this.monthSelectPlugin({
-          shorthand: true,
+          shorthand: false,
           dateFormat: "Y-m",
           altFormat: "M Y",
           theme: "light"
