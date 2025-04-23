@@ -132,6 +132,21 @@ class CustomFlatpickrDatePicker extends HTMLElement {
               });
             });
           }, 100);
+        } else if (this._selectMode === "month") {
+          setTimeout(() => {
+            const monthEls = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
+            monthEls.forEach((el, index) => {
+              el.style.cursor = "pointer";
+              el.addEventListener("click", () => {
+                const year = instance.currentYear;
+                this._dateVal = new Date(year, index, 1);
+                this._secondDateVal = new Date(year, index + 1, 0);
+                this.fp._input.value = this._dateVal.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
+                this.fp.close();
+                this.fireChanged();
+              });
+            });
+          }, 100);
         }
       }
     };
@@ -159,6 +174,10 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     }
 
     this.fp = flatpickr(input, config);
+
+    if (this._dateVal) {
+      this.fp.setDate(this._dateVal);
+    }
   }
 
   fireChanged() {
