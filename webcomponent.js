@@ -10,12 +10,22 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   connectedCallback() {
+    this.injectFlatpickrStyle();
     this.render();
+  }
+
+  injectFlatpickrStyle() {
+    if (!document.getElementById("flatpickr-style")) {
+      const styleLink = document.createElement("link");
+      styleLink.id = "flatpickr-style";
+      styleLink.rel = "stylesheet";
+      styleLink.href = "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css";
+      document.head.appendChild(styleLink);
+    }
   }
 
   render() {
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
       <input id="picker" style="padding:6px;width:100%;" />
     `;
     this.loadAndInitFlatpickr();
