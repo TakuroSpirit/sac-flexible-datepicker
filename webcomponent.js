@@ -83,12 +83,15 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     } else if (this._selectMode === "month") {
       const select = document.createElement("select");
       select.style.width = "100%";
-      const currentYear = (new Date()).getFullYear();
+      select.style.padding = "12px";
+      const currentYear = (this._dateVal || new Date()).getFullYear();
+      const currentMonth = (this._dateVal || new Date()).getMonth();
       for (let m = 0; m < 12; m++) {
         const option = document.createElement("option");
         const date = new Date(currentYear, m, 1);
         option.value = `${currentYear}-${m + 1}`;
         option.textContent = date.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+        if (m === currentMonth) option.selected = true;
         select.appendChild(option);
       }
       select.addEventListener("change", () => {
@@ -98,12 +101,15 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         this.fireChanged();
       });
       container.appendChild(select);
+
     } else if (this._selectMode === "year") {
       const input = document.createElement("input");
       input.type = "number";
       input.placeholder = "Jahr eingeben...";
       input.style.width = "100%";
-      input.style.padding = "6px";
+      input.style.padding = "12px";
+      const year = (this._dateVal || new Date()).getFullYear();
+      input.value = year;
       input.addEventListener("change", () => {
         const year = parseInt(input.value);
         if (!isNaN(year)) {
