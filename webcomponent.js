@@ -103,22 +103,27 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       container.appendChild(select);
 
     } else if (this._selectMode === "year") {
-      const input = document.createElement("input");
-      input.type = "number";
-      input.placeholder = "Jahr eingeben...";
-      input.style.width = "100%";
-      input.style.padding = "12px";
-      const year = (this._dateVal || new Date()).getFullYear();
-      input.value = year;
-      input.addEventListener("change", () => {
-        const year = parseInt(input.value);
+      const select = document.createElement("select");
+      select.style.width = "100%";
+      select.style.padding = "12px";
+      const currentYear = (this._dateVal || new Date()).getFullYear();
+      for (let i = -7; i <= 2; i++) {
+        const y = currentYear + i;
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y;
+        if (y === currentYear) option.selected = true;
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        const year = parseInt(select.value);
         if (!isNaN(year)) {
           this._dateVal = new Date(year, 0, 1);
           this._secondDateVal = new Date(year, 11, 31);
           this.fireChanged();
         }
       });
-      container.appendChild(input);
+      container.appendChild(select);
     }
   }
 
