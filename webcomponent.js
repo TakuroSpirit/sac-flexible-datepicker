@@ -87,6 +87,18 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           this.fireChanged();
         }
       },
+      onValueUpdate: (selectedDates, dateStr, instance) => {
+        const d = selectedDates[0];
+        if (!isValidDate(d)) return;
+
+        if (this._selectMode === "month") {
+          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
+          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+          this.fp._input.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          this.fp.close();
+          this.fireChanged();
+        }
+      },
       onOpen: (selectedDates, dateStr, instance) => {
         if (this._selectMode === "year") {
           setTimeout(() => {
@@ -104,22 +116,18 @@ class CustomFlatpickrDatePicker extends HTMLElement {
                   this.fireChanged();
                 }
               });
-            });
-          }, 100);
-        } else if (this._selectMode === "month") {
-          setTimeout(() => {
-            const monthButtons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
-            monthButtons.forEach((btn, index) => {
-              btn.style.cursor = "pointer";
-              btn.addEventListener("click", () => {
-                const year = instance.currentYear;
-                const month = index;
-                const newDate = new Date(year, month, 1);
-                this._dateVal = newDate;
-                this._secondDateVal = new Date(year, month + 1, 0);
-                this.fp._input.value = `${year}-${String(month + 1).padStart(2, '0')}`;
-                this.fp.close();
-                this.fireChanged();
+              el.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                  const year = parseInt(el.value);
+                  if (!isNaN(year)) {
+                    const newDate = new Date(year, 0, 1);
+                    this._dateVal = newDate;
+                    this._secondDateVal = new Date(year, 11, 31);
+                    this.fp._input.value = `${year}`;
+                    this.fp.close();
+                    this.fireChanged();
+                  }
+                }
               });
             });
           }, 100);
