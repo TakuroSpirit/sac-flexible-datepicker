@@ -1,0 +1,45 @@
+<!-- manifest.json -->
+{
+  "name": "CustomFlatpickrDatePicker",
+  "id": "custom.flatpickr.datepicker",
+  "version": "1.0.0",
+  "vendor": "GeneratedByChatGPT",
+  "description": "Date Picker mit Flatpickr und Auswahlmodus (Tag, Monat, Jahr)",
+  "icon": "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "custom-flatpickr-datepicker",
+      "url": "https://<your-github-username>.github.io/sap-custom-widget/webcomponent.js"
+    },
+    {
+      "kind": "styling",
+      "tag": "custom-flatpickr-datepicker-aps",
+      "url": "https://<your-github-username>.github.io/sap-custom-widget/aps_webcomponent.js"
+    }
+  ],
+  "properties": {
+    "selectMode": {
+      "type": "string",
+      "default": "day",
+      "description": "Auswahlmodus: day, month oder year"
+    },
+    "darktheme": {
+      "type": "boolean",
+      "default": false
+    },
+    "dateVal": {
+      "type": "Date",
+      "description": "Ausgewähltes Startdatum"
+    },
+    "secondDateVal": {
+      "type": "Date",
+      "description": "Ausgewähltes Enddatum (bei Ranges)"
+    }
+  },
+  "events": {
+    "onChange": {
+      "description": "Wird ausgelöst, wenn sich das Datum ändert"
+    }
+  }
+}
