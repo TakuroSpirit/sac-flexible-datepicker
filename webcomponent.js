@@ -27,7 +27,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   render() {
     this.shadowRoot.innerHTML = `
       <div style="margin-bottom: 8px; font-size: 0.9em;">
-        <label style="font-weight:bold; display:block; margin-bottom: 4px;">Modus wählen:</label>
+        <label style="font-weight:bold; display:block; margin-bottom: 4px;">Filtern auf:</label>
         <label><input type="radio" name="mode" value="day" ${this._selectMode === "day" ? "checked" : ""}/> Tag</label>
         <label><input type="radio" name="mode" value="month" ${this._selectMode === "month" ? "checked" : ""}/> Monat</label>
         <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
@@ -135,6 +135,10 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         selectMode: this._selectMode,
       }
     }));
+  }
+
+  getMode() {
+    return this._selectMode === "day" ? "D" : this._selectMode === "month" ? "M" : "Y";
   }
 
   set selectMode(value) {
