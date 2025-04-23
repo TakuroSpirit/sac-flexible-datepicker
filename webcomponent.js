@@ -85,8 +85,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           this._dateVal = d;
           this._secondDateVal = selectedDates[1] || null;
           this.fireChanged();
-        } else {
-          if (this.fp) this.fp.setDate(d, true);
         }
       },
       onOpen: (selectedDates, dateStr, instance) => {
@@ -101,7 +99,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
                   const newDate = new Date(year, 0, 1);
                   this._dateVal = newDate;
                   this._secondDateVal = new Date(year, 11, 31);
-                  this.fp.setDate(newDate, true);
+                  this.fp._input.value = `${year}`;
                   this.fp.close();
                   this.fireChanged();
                 }
@@ -119,7 +117,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
                 const newDate = new Date(year, month, 1);
                 this._dateVal = newDate;
                 this._secondDateVal = new Date(year, month + 1, 0);
-                this.fp.setDate(newDate, true);
+                this.fp._input.value = `${year}-${String(month + 1).padStart(2, '0')}`;
                 this.fp.close();
                 this.fireChanged();
               });
