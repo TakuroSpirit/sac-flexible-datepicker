@@ -1,4 +1,3 @@
-// webcomponent.js
 class CustomFlatpickrDatePicker extends HTMLElement {
   constructor() {
     super();
@@ -36,61 +35,43 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   initFlatpickr() {
+    const input = this.shadowRoot.getElementById("picker");
+    if (!input) return;
+
     const config = {
       dateFormat: "Y-m-d",
-      onChange: this.onChange.bind(this),
+      mode: this._selectMode === "day" ? "single" : "range",
+      onChange: (selectedDates) => {
+        if (this._selectMode === "year") {
+          const year = selectedDates[0].getFullYear();
+          this._dateVal = new Date(year, 0, 1);
+          this._secondDateVal = new Date(year, 11, 31);
+        } else if (this._selectMode === "month") {
+          const d = selectedDates[0];
+          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
+          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        } else {
+          this._dateVal = selectedDates[0];
+          this._secondDateVal = selectedDates[1] || null;
+        }
+        this.fireChanged();
+      }
     };
 
-    if (this._selectMode === "month") {
-      config.plugins = [
-        new window.flatpickr.l10ns.default.monthSelectPlugin({
-          shorthand: true,
-          dateFormat: "Y-m",
-          altFormat: "F Y"
-        })
-      ];
-    } else if (this._selectMode === "year") {
-      config.plugins = [
-        {
-          shorthand: true,
-          onReady: (selectedDates, dateStr, instance) => {
-            instance.currentYearElement.type = "number";
-            instance.currentYearElement.step = 1;
-            instance.daysContainer.style.display = "none";
-          },
-          onChange: (selectedDates, dateStr) => {
-            const year = selectedDates[0].getFullYear();
-            const start = new Date(year, 0, 1);
-            const end = new Date(year, 11, 31);
-            this._dateVal = start;
-            this._secondDateVal = end;
-            this.fireChanged();
-          }
-        }
-      ];
-    }
-
-    this.fp = window.flatpickr(this.shadowRoot.getElementById("picker"), config);
-  }
-
-  onChange(selectedDates) {
-    this._dateVal = selectedDates[0];
-    this._secondDateVal = selectedDates[1] || null;
-    this.fireChanged();
+    this.fp = flatpickr(input, config);
   }
 
   fireChanged() {
-    this.dispatchEvent(
-      new CustomEvent("onChange", {
-        detail: {
-          dateVal: this._dateVal,
-          secondDateVal: this._secondDateVal,
-          selectMode: this._selectMode,
-        },
-      })
-    );
+    this.dispatchEvent(new CustomEvent("onChange", {
+      detail: {
+        dateVal: this._dateVal,
+        secondDateVal: this._secondDateVal,
+        selectMode: this._selectMode,
+      }
+    }));
   }
 
+  // SAC property setters
   set selectMode(value) {
     this._selectMode = value;
     if (this.fp) this.fp.destroy();
