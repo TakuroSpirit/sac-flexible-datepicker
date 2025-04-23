@@ -86,20 +86,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           this.fireChanged();
         }
       },
-      onValueUpdate: (selectedDates) => {
-        const d = selectedDates[0];
-        if (!isValidDate(d)) return;
-
-        if (this._selectMode === "month") {
-          const month = d.getMonth();
-          const year = d.getFullYear();
-          this._dateVal = new Date(year, month, 1);
-          this._secondDateVal = new Date(year, month + 1, 0);
-          this.fp._input.value = d.toLocaleDateString("de-DE", { month: "short", year: "numeric" });
-          this.fp.close();
-          this.fireChanged();
-        }
-      },
       onOpen: (selectedDates, dateStr, instance) => {
         if (this._selectMode === "year") {
           setTimeout(() => {
@@ -129,6 +115,21 @@ class CustomFlatpickrDatePicker extends HTMLElement {
                     this.fireChanged();
                   }
                 }
+              });
+            });
+          }, 100);
+        } else if (this._selectMode === "month") {
+          setTimeout(() => {
+            const buttons = instance.calendarContainer.querySelectorAll(".flatpickr-monthSelect-month");
+            buttons.forEach((btn, index) => {
+              btn.style.cursor = "pointer";
+              btn.addEventListener("click", () => {
+                const year = instance.currentYear;
+                this._dateVal = new Date(year, index, 1);
+                this._secondDateVal = new Date(year, index + 1, 0);
+                this.fp.setDate(this._dateVal, true);
+                this.fp.close();
+                this.fireChanged();
               });
             });
           }, 100);
