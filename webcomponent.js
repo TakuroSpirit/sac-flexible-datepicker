@@ -7,7 +7,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this._darktheme = false;
     this._dateVal = new Date();
     this._secondDateVal = null;
-    this._displayYear = new Date().getFullYear();
   }
 
   connectedCallback() {
@@ -27,42 +26,6 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <style>
-        button {
-          height: 32px;
-          line-height: 32px;
-          padding: 0 8px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          background: #f9f9f9;
-          cursor: pointer;
-          transition: background-color 0.3s;
-        }
-        button:hover {
-          background-color: #d0e6f7;
-        }
-        input[type="text"], select {
-          height: 32px;
-          line-height: 32px;
-          padding: 0 8px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        #picker {
-          height: 44px;
-          line-height: 44px;
-          padding: 0 12px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-      </style>
       <div style="background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="margin-bottom: 8px; font-size: 0.9em;">
           <label style="font-weight:bold; display:block; margin-bottom: 4px;">Filtern auf:</label>
@@ -127,7 +90,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     } else if (this._selectMode === "month") {
       const select = document.createElement("select");
       select.style.width = "100%";
-      select.style.padding = "8px";
+      select.style.padding = "12px";
       select.style.border = "1px solid #ccc";
       select.style.borderRadius = "8px";
       const currentYear = (this._dateVal || new Date()).getFullYear();
@@ -151,7 +114,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     } else if (this._selectMode === "year") {
       const select = document.createElement("select");
       select.style.width = "100%";
-      select.style.padding = "8px";
+      select.style.padding = "12px";
       select.style.border = "1px solid #ccc";
       select.style.borderRadius = "8px";
       const currentYear = (this._dateVal || new Date()).getFullYear();
@@ -193,6 +156,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     buttons.forEach(b => {
       const btn = document.createElement("button");
       btn.textContent = b.label;
+      btn.style.padding = "6px";
+      btn.style.borderRadius = "6px";
+      btn.style.border = "1px solid #ccc";
+      btn.style.background = "#f9f9f9";
+      btn.style.cursor = "pointer";
       btn.addEventListener("click", () => {
         this._selectMode = b.mode;
         if (b.type === "day") {
@@ -278,4 +246,4 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 }
 
-customElements.define("custom-flatpickr-datepicker", CustomFlatpickrDatePick
+customElements.define("custom-flatpickr-datepicker", CustomFlatpickrDatePicker);
