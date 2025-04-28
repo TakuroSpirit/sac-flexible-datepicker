@@ -61,6 +61,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     if (this._selectMode === "day") {
       const input = document.createElement("input");
       input.style.padding = "6px";
+      select.style.height = "36px"
       input.style.width = "calc(100% - 12px)";
       input.style.border = "1px solid #ccc";
       input.style.borderRadius = "8px";
@@ -90,6 +91,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     } else if (this._selectMode === "month") {
       const select = document.createElement("select");
       select.style.width = "100%";
+      select.style.height = "36px"
       select.style.padding = "12px";
       select.style.border = "1px solid #ccc";
       select.style.borderRadius = "8px";
@@ -115,6 +117,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       const select = document.createElement("select");
       select.style.width = "100%";
       select.style.padding = "12px";
+      select.style.height = "36px"
       select.style.border = "1px solid #ccc";
       select.style.borderRadius = "8px";
       const currentYear = (this._dateVal || new Date()).getFullYear();
