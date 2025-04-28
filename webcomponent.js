@@ -32,10 +32,20 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           background-color: #e0e0e0;
           transition: background-color 0.2s;
         }
-        input[type="text"], select {
-          height: 44px;
-          line-height: 44px;
-          padding: 0 12px;
+        input[type="text"] {
+          height: 32px;
+          line-height: 32px;
+          padding: 0 8px;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        select {
+          height: 32px;
+          line-height: 32px;
+          padding: 0 8px;
           font-size: 1rem;
           border: 1px solid #ccc;
           border-radius: 8px;
@@ -89,44 +99,13 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
         </div>
         <div id="custom-input" style="margin-bottom:16px;"></div>
-        <input id="yearInput" type="text" placeholder="Jahr eingeben oder wählen" style="height: 44px; line-height: 44px; padding: 0 12px; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; width: 100%; box-sizing: border-box;"/>
-        <select id="yearDropdown" class="year-select"></select>
         <div id="quick-buttons" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;"></div>
       </div>
     `;
 
-    const yearDropdown = this.shadowRoot.getElementById("yearDropdown");
-    const yearInput = this.shadowRoot.getElementById("yearInput");
-
-    for (let year = 1950; year <= 2030; year++) {
-      const option = document.createElement("option");
-      option.value = year;
-      option.textContent = year;
-      yearDropdown.appendChild(option);
-    }
-
-    yearDropdown.addEventListener("change", (e) => {
-      yearInput.value = e.target.value;
-      this._displayYear = parseInt(e.target.value);
-      this.updateDatesForMode("year");
-      this.fireChanged();
-    });
-
-    yearInput.addEventListener("change", (e) => {
-      const inputYear = parseInt(e.target.value);
-      if (!isNaN(inputYear) && inputYear >= 1950 && inputYear <= 2030) {
-        yearDropdown.value = inputYear;
-        this._displayYear = inputYear;
-        this.updateDatesForMode("year");
-        this.fireChanged();
-      }
-    });
-
     this.shadowRoot.querySelectorAll("input[name='mode']").forEach(radio => {
       radio.addEventListener("change", (e) => {
-        this.updateDatesForMode(e.target.value);
         this.selectMode = e.target.value;
-        this.renderCustomInput();
         this.fireChanged();
       });
     });
