@@ -62,7 +62,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       const input = document.createElement("input");
       input.style.padding = "6px";
       input.style.height = "36px"
-      input.style.width = "calc(100% - 12px)";
+      input.style.width = "100%";
       input.style.border = "1px solid #ccc";
       input.style.borderRadius = "8px";
       input.id = "picker";
