@@ -161,6 +161,11 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       btn.style.border = "1px solid #ccc";
       btn.style.background = "#f9f9f9";
       btn.style.cursor = "pointer";
+      btn.style.height = "36px"; // Einheitliche Höhe
+      btn.style.display = "flex"; 
+      btn.style.alignItems = "center"; 
+      btn.style.justifyContent = "center";
+
       btn.addEventListener("click", () => {
         this._selectMode = b.mode;
         if (b.type === "day") {
@@ -211,6 +216,10 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   set dateVal(value) {
+    if (!value) {
+      this._dateVal = null;
+      return;
+    }
     const parsed = new Date(value);
     if (parsed instanceof Date && !isNaN(parsed)) {
       this._dateVal = parsed;
@@ -219,7 +228,14 @@ class CustomFlatpickrDatePicker extends HTMLElement {
   }
 
   set secondDateVal(value) {
-    this._secondDateVal = new Date(value);
+    if (!value) {
+      this._secondDateVal = null;
+      return;
+    }
+    const parsed = new Date(value);
+    if (parsed instanceof Date && !isNaN(parsed)) {
+      this._secondDateVal = parsed;
+    }
   }
 
   get dateVal() {
