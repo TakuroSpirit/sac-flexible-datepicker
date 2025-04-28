@@ -70,6 +70,16 @@ class CustomFlatpickrDatePicker extends HTMLElement {
         .year-control button {
           margin: 0 8px;
         }
+        #picker {
+          height: 44px;
+          line-height: 44px;
+          padding: 0 12px;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        }
       </style>
       <div style="background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="margin-bottom: 8px; font-size: 0.9em;">
@@ -79,7 +89,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
         </div>
         <div id="custom-input" style="margin-bottom:16px;"></div>
-        <input id="yearInput" type="text" placeholder="Jahr eingeben oder wählen" />
+        <input id="yearInput" type="text" placeholder="Jahr eingeben oder wählen" style="height: 44px; line-height: 44px; padding: 0 12px; font-size: 1rem; border: 1px solid #ccc; border-radius: 8px; width: 100%; box-sizing: border-box;"/>
         <select id="yearDropdown" class="year-select"></select>
         <div id="quick-buttons" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;"></div>
       </div>
