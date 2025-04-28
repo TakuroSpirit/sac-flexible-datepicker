@@ -5,7 +5,7 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._selectMode = "day";
     this._darktheme = false;
-    this._dateVal = null;
+    this._dateVal = new Date();
     this._secondDateVal = null;
   }
 
@@ -26,22 +26,27 @@ class CustomFlatpickrDatePicker extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <div style="margin-bottom: 8px; font-size: 0.9em;">
-        <label style="font-weight:bold; display:block; margin-bottom: 4px;">Filtern auf:</label>
-        <label><input type="radio" name="mode" value="day" ${this._selectMode === "day" ? "checked" : ""}/> Tag</label>
-        <label><input type="radio" name="mode" value="month" ${this._selectMode === "month" ? "checked" : ""}/> Monat</label>
-        <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
+      <div style="background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 8px; font-size: 0.9em;">
+          <label style="font-weight:bold; display:block; margin-bottom: 4px;">Filtern auf:</label>
+          <label><input type="radio" name="mode" value="day" ${this._selectMode === "day" ? "checked" : ""}/> Tag</label>
+          <label><input type="radio" name="mode" value="month" ${this._selectMode === "month" ? "checked" : ""}/> Monat</label>
+          <label><input type="radio" name="mode" value="year" ${this._selectMode === "year" ? "checked" : ""}/> Jahr</label>
+        </div>
+        <div id="custom-input" style="margin-bottom:16px;"></div>
+        <div id="quick-buttons" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;"></div>
       </div>
-      <div id="custom-input"></div>
     `;
 
     this.shadowRoot.querySelectorAll("input[name='mode']").forEach(radio => {
       radio.addEventListener("change", (e) => {
         this.selectMode = e.target.value;
+        this.fireChanged();
       });
     });
 
     this.renderCustomInput();
+    this.renderQuickButtons();
   }
 
   async renderCustomInput() {
@@ -56,7 +61,9 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     if (this._selectMode === "day") {
       const input = document.createElement("input");
       input.style.padding = "6px";
-      input.style.width = "100%";
+      input.style.width = "calc(100% - 12px)";
+      input.style.border = "1px solid #ccc";
+      input.style.borderRadius = "8px";
       input.id = "picker";
       container.appendChild(input);
 
@@ -84,6 +91,8 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       const select = document.createElement("select");
       select.style.width = "100%";
       select.style.padding = "12px";
+      select.style.border = "1px solid #ccc";
+      select.style.borderRadius = "8px";
       const currentYear = (this._dateVal || new Date()).getFullYear();
       const currentMonth = (this._dateVal || new Date()).getMonth();
       for (let m = 0; m < 12; m++) {
@@ -106,6 +115,8 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       const select = document.createElement("select");
       select.style.width = "100%";
       select.style.padding = "12px";
+      select.style.border = "1px solid #ccc";
+      select.style.borderRadius = "8px";
       const currentYear = (this._dateVal || new Date()).getFullYear();
       for (let i = -7; i <= 2; i++) {
         const y = currentYear + i;
@@ -125,6 +136,54 @@ class CustomFlatpickrDatePicker extends HTMLElement {
       });
       container.appendChild(select);
     }
+  }
+
+  renderQuickButtons() {
+    const quick = this.shadowRoot.getElementById("quick-buttons");
+    quick.innerHTML = "";
+    const buttons = [
+      { label: "Gestern", mode: "day", offset: -1, type: "day" },
+      { label: "Heute", mode: "day", offset: 0, type: "day" },
+      { label: "Morgen", mode: "day", offset: 1, type: "day" },
+      { label: "Letzter Monat", mode: "month", offset: -1, type: "month" },
+      { label: "Aktueller Monat", mode: "month", offset: 0, type: "month" },
+      { label: "Nächster Monat", mode: "month", offset: 1, type: "month" },
+      { label: "Letztes Jahr", mode: "year", offset: -1, type: "year" },
+      { label: "Aktuelles Jahr", mode: "year", offset: 0, type: "year" },
+      { label: "Nächstes Jahr", mode: "year", offset: 1, type: "year" },
+    ];
+
+    buttons.forEach(b => {
+      const btn = document.createElement("button");
+      btn.textContent = b.label;
+      btn.style.padding = "6px";
+      btn.style.borderRadius = "6px";
+      btn.style.border = "1px solid #ccc";
+      btn.style.background = "#f9f9f9";
+      btn.style.cursor = "pointer";
+      btn.addEventListener("click", () => {
+        this._selectMode = b.mode;
+        if (b.type === "day") {
+          const d = new Date();
+          d.setDate(d.getDate() + b.offset);
+          this._dateVal = d;
+          this._secondDateVal = null;
+        } else if (b.type === "month") {
+          const d = new Date();
+          d.setMonth(d.getMonth() + b.offset);
+          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
+          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        } else if (b.type === "year") {
+          const d = new Date();
+          d.setFullYear(d.getFullYear() + b.offset);
+          this._dateVal = new Date(d.getFullYear(), 0, 1);
+          this._secondDateVal = new Date(d.getFullYear(), 11, 31);
+        }
+        this.render();
+        this.fireChanged();
+      });
+      quick.appendChild(btn);
+    });
   }
 
   fireChanged() {
