@@ -37,10 +37,10 @@ class CustomFlatpickrDatePicker extends HTMLElement {
           border-radius: 8px;
           background: #f9f9f9;
           cursor: pointer;
+          transition: background-color 0.3s;
         }
         button:hover {
-          background-color: #e0e0e0;
-          transition: background-color 0.2s;
+          background-color: #d0e6f7;
         }
         input[type="text"], select {
           height: 32px;
@@ -86,7 +86,196 @@ class CustomFlatpickrDatePicker extends HTMLElement {
     this.renderQuickButtons();
   }
 
-  // rest bleibt unverändert
+  async renderCustomInput() {
+    const container = this.shadowRoot.getElementById("custom-input");
+    container.innerHTML = "";
+
+    if (this.fp) {
+      this.fp.destroy();
+      this.fp = null;
+    }
+
+    if (this._selectMode === "day") {
+      const input = document.createElement("input");
+      input.style.padding = "6px";
+      input.style.width = "calc(100% - 12px)";
+      input.style.border = "1px solid #ccc";
+      input.style.borderRadius = "8px";
+      input.id = "picker";
+      container.appendChild(input);
+
+      if (!window.flatpickr) {
+        await import("https://cdn.jsdelivr.net/npm/flatpickr");
+      }
+
+      this.fp = flatpickr(input, {
+        dateFormat: "d.m.Y",
+        defaultDate: this._dateVal,
+        onChange: (selectedDates) => {
+          const d = selectedDates[0];
+          if (!(d instanceof Date) || isNaN(d)) return;
+          this._dateVal = d;
+          this._secondDateVal = null;
+          this.fireChanged();
+        }
+      });
+
+      if (this._dateVal) {
+        this.fp.setDate(this._dateVal, true);
+      }
+
+    } else if (this._selectMode === "month") {
+      const select = document.createElement("select");
+      select.style.width = "100%";
+      select.style.padding = "8px";
+      select.style.border = "1px solid #ccc";
+      select.style.borderRadius = "8px";
+      const currentYear = (this._dateVal || new Date()).getFullYear();
+      const currentMonth = (this._dateVal || new Date()).getMonth();
+      for (let m = 0; m < 12; m++) {
+        const option = document.createElement("option");
+        const date = new Date(currentYear, m, 1);
+        option.value = `${currentYear}-${m + 1}`;
+        option.textContent = date.toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+        if (m === currentMonth) option.selected = true;
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        const [year, month] = select.value.split("-").map(Number);
+        this._dateVal = new Date(year, month - 1, 1);
+        this._secondDateVal = new Date(year, month, 0);
+        this.fireChanged();
+      });
+      container.appendChild(select);
+
+    } else if (this._selectMode === "year") {
+      const select = document.createElement("select");
+      select.style.width = "100%";
+      select.style.padding = "8px";
+      select.style.border = "1px solid #ccc";
+      select.style.borderRadius = "8px";
+      const currentYear = (this._dateVal || new Date()).getFullYear();
+      for (let i = -7; i <= 2; i++) {
+        const y = currentYear + i;
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y;
+        if (y === currentYear) option.selected = true;
+        select.appendChild(option);
+      }
+      select.addEventListener("change", () => {
+        const year = parseInt(select.value);
+        if (!isNaN(year)) {
+          this._dateVal = new Date(year, 0, 1);
+          this._secondDateVal = new Date(year, 11, 31);
+          this.fireChanged();
+        }
+      });
+      container.appendChild(select);
+    }
+  }
+
+  renderQuickButtons() {
+    const quick = this.shadowRoot.getElementById("quick-buttons");
+    quick.innerHTML = "";
+    const buttons = [
+      { label: "Gestern", mode: "day", offset: -1, type: "day" },
+      { label: "Heute", mode: "day", offset: 0, type: "day" },
+      { label: "Morgen", mode: "day", offset: 1, type: "day" },
+      { label: "Letzter Monat", mode: "month", offset: -1, type: "month" },
+      { label: "Aktueller Monat", mode: "month", offset: 0, type: "month" },
+      { label: "Nächster Monat", mode: "month", offset: 1, type: "month" },
+      { label: "Letztes Jahr", mode: "year", offset: -1, type: "year" },
+      { label: "Aktuelles Jahr", mode: "year", offset: 0, type: "year" },
+      { label: "Nächstes Jahr", mode: "year", offset: 1, type: "year" },
+    ];
+
+    buttons.forEach(b => {
+      const btn = document.createElement("button");
+      btn.textContent = b.label;
+      btn.addEventListener("click", () => {
+        this._selectMode = b.mode;
+        if (b.type === "day") {
+          const d = new Date();
+          d.setDate(d.getDate() + b.offset);
+          this._dateVal = d;
+          this._secondDateVal = null;
+        } else if (b.type === "month") {
+          const d = new Date();
+          d.setMonth(d.getMonth() + b.offset);
+          this._dateVal = new Date(d.getFullYear(), d.getMonth(), 1);
+          this._secondDateVal = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        } else if (b.type === "year") {
+          const d = new Date();
+          d.setFullYear(d.getFullYear() + b.offset);
+          this._dateVal = new Date(d.getFullYear(), 0, 1);
+          this._secondDateVal = new Date(d.getFullYear(), 11, 31);
+        }
+        this.render();
+        this.fireChanged();
+      });
+      quick.appendChild(btn);
+    });
+  }
+
+  fireChanged() {
+    this.dispatchEvent(new CustomEvent("onChange", {
+      detail: {
+        dateVal: this._dateVal,
+        secondDateVal: this._secondDateVal,
+        selectMode: this._selectMode,
+      }
+    }));
+  }
+
+  getMode() {
+    return this._selectMode === "day" ? "D" : this._selectMode === "month" ? "M" : "Y";
+  }
+
+  set selectMode(value) {
+    this._selectMode = value;
+    this.render();
+  }
+
+  set darktheme(value) {
+    this._darktheme = value;
+    this.render();
+  }
+
+  set dateVal(value) {
+    const parsed = new Date(value);
+    if (parsed instanceof Date && !isNaN(parsed)) {
+      this._dateVal = parsed;
+      if (this.fp) this.fp.setDate(this._dateVal, true);
+    }
+  }
+
+  set secondDateVal(value) {
+    this._secondDateVal = new Date(value);
+  }
+
+  get dateVal() {
+    return this._dateVal;
+  }
+
+  get secondDateVal() {
+    return this._secondDateVal;
+  }
+
+  getStartDate() {
+    return this._dateVal;
+  }
+
+  getEndDate() {
+    return this._secondDateVal;
+  }
+
+  clear() {
+    this._dateVal = null;
+    this._secondDateVal = null;
+    if (this.fp) this.fp.clear();
+    this.fireChanged();
+  }
 }
 
-customElements.define("custom-flatpickr-datepicker", CustomFlatpickrDatePicker);
+customElements.define("custom-flatpickr-datepicker", CustomFlatpickrDatePick
